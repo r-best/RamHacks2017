@@ -68,16 +68,31 @@ def analyze_language_entities(text):
     return request.execute()
 
 
+def analyze_language_sentiment(text):
+    body = {
+        'document': {
+            'type': 'PLAIN_TEXT',
+            'content': text,
+        },
+        'encoding_type': 'UTF32',
+    }
+
+    service = googleapiclient.discovery.build('language', 'v1')
+
+    request = service.documents().analyzeSentiment(body=body)
+    return request.execute()
+
+
 def text_contains(text_obj, search_type):
     # Takes in results of a Google language analysis and checks if
     # any of the entities are of the specified type
     for entity in text_obj:
         if entity['type'] == search_type:
-            return True
+            return entity
     return False
 
 
-def find_nearby_atms(coords, radius=100):
+def find_nearby_atms(coords, radius=10):
     url = 'http://api.reimaginebanking.com/atms'
     body = {
         'lng': coords[0],
@@ -94,7 +109,7 @@ def degrees_to_radians(degrees):
     return degrees * 3.1415 / 180
 
 
-def find_nearby_banks(coords, radius=1):
+def find_nearby_banks(coords, radius=10):
     url = 'http://api.reimaginebanking.com/branches'
     body = {
         'key': keys['nessie_key']
@@ -128,6 +143,17 @@ def find_nearby_banks(coords, radius=1):
                     response2[i] = temp
                     swapped = True
         return response2
+
+
+def get_coords_from_location(location_name):
+    url = 'https://maps.googleapis.com/maps/api/geocode/json'
+    body = {
+        'address': 'Richmond',
+        'key': keys['google_key']
+    }
+    response = requests.get(url, body).json()['results'][0]['geometry']['location']
+    print(json.dumps(response, indent=2))
+    return [response['lng'], response['lat']]
 
 
 # def get_static_map_atms(center_coords, marker_objs):
