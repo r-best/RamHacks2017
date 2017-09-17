@@ -92,7 +92,7 @@ def text_contains(text_obj, search_type):
     return False
 
 
-def find_nearby_atms(coords, radius=10):
+def find_nearby_atms(coords, radius=100):
     url = 'http://api.reimaginebanking.com/atms'
     body = {
         'lng': coords[0],
@@ -109,13 +109,14 @@ def degrees_to_radians(degrees):
     return degrees * 3.1415 / 180
 
 
-def find_nearby_banks(coords, radius=10):
+def find_nearby_banks(coords, radius=100):
     url = 'http://api.reimaginebanking.com/branches'
     body = {
         'key': keys['nessie_key']
     }
     response = requests.get(url, body).json()
     response2 = []
+    distances = []
     for bank in response:
         lng = degrees_to_radians(coords[0])
         lat = degrees_to_radians(coords[1])
@@ -126,29 +127,33 @@ def find_nearby_banks(coords, radius=10):
         earth_radius_miles = 3959
         distance = earth_radius_miles * c
         if distance <= radius:
-            bank.distance = distance
+            distances.append(distance)
             response2.append(bank)
     print(response2.__len__())
     if response2 == []:
         return None
     else:
-        # bubblesort time
-        swapped = False
-        while not swapped:
+        if response2.__len__() > 1:
+            # bubblesort time
             swapped = False
-            for i in range(1, response2.__len__()):
-                if response2[i-1].distance > response2[i].distance:
-                    temp = response2[i-1]
-                    response2[i-1] = response2[i]
-                    response2[i] = temp
-                    swapped = True
+            while not swapped:
+                swapped = False
+                for i in range(1, response2.__len__()):
+                    if distances[i-1] > distances[i]:
+                        temp = response2[i-1]
+                        response2[i-1] = response2[i]
+                        response2[i] = temp
+                        temp = distances[i-1]
+                        distances[i-1] = distances[i]
+                        distances[i] = temp
+                        swapped = True
         return response2
 
 
 def get_coords_from_location(location_name):
     url = 'https://maps.googleapis.com/maps/api/geocode/json'
     body = {
-        'address': 'Richmond',
+        'address': location_name,
         'key': keys['google_key']
     }
     response = requests.get(url, body).json()['results'][0]['geometry']['location']

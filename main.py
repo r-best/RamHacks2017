@@ -20,6 +20,7 @@ if tweets.__len__() == 0:
     exit(0)
 
 for tweet in tweets:
+    print(tweet.text)
     entities = api_calls.analyze_language_entities(tweet.text)['entities']
     reply_text = '@' + tweet.user.screen_name + ' '
     sentiment = api_calls.analyze_language_sentiment(tweet.text)['documentSentiment']
@@ -34,7 +35,7 @@ for tweet in tweets:
         for entity in entities:
             if entity['name'].lower().find('bank') != -1 or entity['name'].lower().find('branch') != -1:
                 banks = api_calls.find_nearby_banks(tweet.place.bounding_box.coordinates[0][0])
-                if banks is None:
+                if banks is None or banks.__len__() == 0:
                     reply_text += 'Unfortunately there are no banks within range of this location'
                     break
                 else:
@@ -48,7 +49,7 @@ for tweet in tweets:
                     break
             elif entity['name'].lower().find('atm') != -1:
                 atms = api_calls.find_nearby_atms(tweet.place.bounding_box.coordinates[0][0])
-                if atms is None:
+                if atms is None or atms.__len__() == 0:
                     reply_text += 'Unfortunately there are no ATMs within range of this location'
                     break
                 else:
@@ -67,7 +68,7 @@ for tweet in tweets:
                     reply_text += 'It looks like you\'re trying to find a nearby bank branch, but your tweet did not have your location attached'
                     break
                 banks = api_calls.find_nearby_banks(tweet.place.bounding_box.coordinates[0][0])
-                if banks is None:
+                if banks is None or banks.__len__() == 0:
                     reply_text += 'Unfortunately there are no banks within range of this location'
                     break
                 else:
@@ -84,7 +85,7 @@ for tweet in tweets:
                     reply_text += 'It looks like you\'re trying to find a nearby ATM, but your tweet did not have your location attached'
                     break
                 atms = api_calls.find_nearby_atms(tweet.place.bounding_box.coordinates[0][0])
-                if atms is None:
+                if atms is None or atms.__len__() == 0:
                     reply_text += 'Unfortunately there are no ATMs within range of this location'
                     break
                 else:
